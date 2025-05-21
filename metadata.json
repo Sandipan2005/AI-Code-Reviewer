@@ -1,0 +1,4 @@
+{
+  "name": "AI Code Reviewer",
+  "description": "An automated code review tool that uses Gemini to analyze code and provide feedback on potential issues, style, and improvements. The tool expects the Gemini API key to be available as 'process.env.API_KEY'."
+}
