@@ -1,5 +1,3 @@
-
-
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { SupportedLanguage, ReviewReport, CodeIssue, IssueSeverity, IssueCategory } from '../types';
 import { GEMINI_MODEL_NAME, GEMINI_API_KEY_ERROR_MESSAGE } from '../constants';
@@ -81,7 +79,23 @@ ${code}
       jsonStr = match[1].trim();
     }
 
-    const parsedData = JSON.parse(jsonStr) as ReviewReport;
+    let parsedData: ReviewReport;
+    try {
+      parsedData = JSON.parse(jsonStr) as ReviewReport;
+    } catch (e) {
+      // Try to extract the first JSON object from the string
+      const jsonObjectRegex = /{[\s\S]*}/;
+      const jsonMatch = jsonStr.match(jsonObjectRegex);
+      if (jsonMatch) {
+        try {
+          parsedData = JSON.parse(jsonMatch[0]) as ReviewReport;
+        } catch (e2) {
+          throw new SyntaxError('Failed to parse review feedback as JSON after extracting JSON object.');
+        }
+      } else {
+        throw new SyntaxError('Failed to find a JSON object in the AI response.');
+      }
+    }
 
     if (typeof parsedData.overallAssessment !== 'string' || !Array.isArray(parsedData.issues)) {
       console.error("Invalid JSON structure received:", parsedData);
